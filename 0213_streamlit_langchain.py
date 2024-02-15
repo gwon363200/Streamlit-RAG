@@ -78,7 +78,7 @@ from langchain.memory import StreamlitChatMessageHistory
 
 def main():
     st.set_page_config(
-    page_title="shkwon_Chatbot", # 웹페이지 탭 이름
+    page_title="shkwon_chatbot", # 웹페이지 탭 이름
     page_icon=":books:") # 웹페이지 탭 아이콘, :쓰면 아이콘이 들어간다
 
     st.title("_Private Data :red[QA 챗봇]_ :books:") # 웹페이지 제목, _를 쓰면 기울기체로 된다
