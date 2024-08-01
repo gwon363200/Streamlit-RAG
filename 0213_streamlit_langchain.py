@@ -81,7 +81,7 @@ def main():
     page_title="shkwon_chatbot", # 웹페이지 탭 이름
     page_icon=":books:") # 웹페이지 탭 아이콘, :쓰면 아이콘이 들어간다
 
-    st.title("_Private Data :red[QA 챗봇]_ :books:") # 웹페이지 제목, _를 쓰면 기울기체로 된다
+    st.title("_Report Base :red[CLOVA 챗봇]_ :books:") # 웹페이지 제목, _를 쓰면 기울기체로 된다
 
     ### 1
     # session_state.conversation라는 변수를 사용하기 위해서 이런 식으로 정의를 해줘야함
@@ -97,28 +97,31 @@ def main():
 
     # with문: 어떤 구성 요소 안에 하위 구성 요소들이 집행돼야하는 경우에 활용됨
     # 사이드 바를 만드는 코드
-    with st.sidebar:
-        uploaded_files =  st.file_uploader("Upload your file",type=['pdf','docx'],accept_multiple_files=True) # file_uploader: 파일 업로더 기능을 넣음
-        openai_api_key = st.text_input("OpenAI API Key", key="chatbot_api_key", type="password") # text_input: 오픈AI의 API를 작성하도록 함
-        process = st.button("Process") # button: 버튼을 만듦
+    # with st.sidebar:
+        # uploaded_files =  st.file_uploader("Upload your file",type=['pdf','docx'],accept_multiple_files=True) # file_uploader: 파일 업로더 기능을 넣음
+        # openai_api_key = st.text_input("API Key", key="chatbot_api_key", type="password") # text_input: 오픈AI의 API를 작성하도록 함
+        # process = st.button("Process") # button: 버튼을 만듦
+
+    predefined_files = ['/Users/ksh/Workspace/개인연구/LLM/실험 및 데이터/Streamlit_RAG/트럼프 트레이드.pdf', '/Users/ksh/Workspace/개인연구/LLM/실험 및 데이터/Streamlit_RAG/2분기 스마트폰.pdf', '/Users/ksh/Workspace/개인연구/LLM/실험 및 데이터/Streamlit_RAG/큐텐 사태.pdf', '/Users/ksh/Workspace/개인연구/LLM/실험 및 데이터/Streamlit_RAG/에쓰오일.pdf']
 
     # 만약에 process라는 버튼을 누르면~ 구동되는 부분
-    if process:
-        if not openai_api_key: # openAI의 API가 입력되어있지 않으면, 아래 문구를 출력하도록 함
-            st.info("Please add your OpenAI API key to continue.")
-            st.stop()
-        files_text = get_text(uploaded_files) # 입력되어 있다면, get_text를 통해 업로드된 파일들을 텍스트로 변환
-        text_chunks = get_text_chunks(files_text) # 텍스트로 변환된 파일들의 문구들을 청크로 나누기 위함
-        vetorestore = get_vectorstore(text_chunks) # 벡터화 시킴
+    openai_api_key = "sk-None-NNtoIFQFCeey0Fpz3O1vT3BlbkFJfoMmus4C2ogQ5F8elfhK"
+    if not openai_api_key: # openAI의 API가 환경 변수에 설정되어 있지 않으면, 아래 문구를 출력하도록 함
+        st.info("Please set your API key in the environment variable 'API_KEY'.")
+        st.stop()
+        
+    files_text = get_text(predefined_files) # 입력되어 있다면, get_text를 통해 업로드된 파일들을 텍스트로 변환
+    text_chunks = get_text_chunks(files_text) # 텍스트로 변환된 파일들의 문구들을 청크로 나누기 위함
+    vetorestore = get_vectorstore(text_chunks) # 벡터화 시킴
      
-        st.session_state.conversation = get_conversation_chain(vetorestore,openai_api_key)  # 벡터 스토어를 갖고 LLM이 답변을 할 수 있도록 체인을 구성
+    st.session_state.conversation = get_conversation_chain(vetorestore,openai_api_key)  # 벡터 스토어를 갖고 LLM이 답변을 할 수 있도록 체인을 구성
 
-        st.session_state.processComplete = True
+    st.session_state.processComplete = True
 
     ### 2 
     if 'messages' not in st.session_state: # 먼저 아래와 같은 문구를 출력함으로써, UI적으로 친숙한 화면을 만들 수 있음
         st.session_state['messages'] = [{"role": "assistant", 
-                                        "content": "안녕하세요! 주어진 문서에 대해 궁금하신 것이 있으면 언제든 물어봐주세요!"}]
+                                        "content": "안녕하세요! 제공드린 콘텐츠에 대해 궁금하신 것이 있으면 언제든 물어봐주세요!"}]
 
     # 어떤 역할을 맡은 아이콘을 함께 표시를 해주고, 컨테이너 안에 content에 해당하는 텍스트를 적기 위함 
     # 한 번 메세지가 입력될때마다, 하나의 content로 엮음
@@ -146,7 +149,7 @@ def main():
             chain = st.session_state.conversation
 
             # 로딩할때 동그라미가 돌아가는 부분
-            with st.spinner("머리 굴리는중..."):
+            with st.spinner("답변 생성 중..."):
                 result = chain({"question": query})
                 with get_openai_callback() as cb:
                     st.session_state.chat_history = result['chat_history']  # 채팅 기록 저장
@@ -189,25 +192,21 @@ def tiktoken_len(text):
 
 # 업로드된 파일들을 모두 텍스트로 변환하는 함수 
 def get_text(docs):
-
     doc_list = []
     
     for doc in docs:
-        file_name = doc.name  # doc 객체의 이름을 파일 이름으로 사용
-        with open(file_name, "wb") as file:  # 파일을 doc.name으로 저장
-            file.write(doc.getvalue())
-            logger.info(f"Uploaded {file_name}")
-        if '.pdf' in doc.name:
+        file_name = doc
+        if '.pdf' in doc:
             loader = PyPDFLoader(file_name)
             documents = loader.load_and_split()
-        elif '.docx' in doc.name:
+        elif '.docx' in doc:
             loader = Docx2txtLoader(file_name)
             documents = loader.load_and_split()
-        elif '.pptx' in doc.name:
+        elif '.pptx' in doc:
             loader = UnstructuredPowerPointLoader(file_name)
             documents = loader.load_and_split()
 
-        doc_list.extend(documents) # doc_list에 담아서 하나의 다큐먼트 목록을 만들어서 리턴해줌
+        doc_list.extend(documents)
     return doc_list
 
 
