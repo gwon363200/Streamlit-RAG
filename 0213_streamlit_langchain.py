@@ -105,7 +105,7 @@ def main():
     predefined_files = ['/Users/ksh/Workspace/개인연구/LLM/실험 및 데이터/Streamlit_RAG/트럼프 트레이드.pdf', '/Users/ksh/Workspace/개인연구/LLM/실험 및 데이터/Streamlit_RAG/2분기 스마트폰.pdf', '/Users/ksh/Workspace/개인연구/LLM/실험 및 데이터/Streamlit_RAG/큐텐 사태.pdf', '/Users/ksh/Workspace/개인연구/LLM/실험 및 데이터/Streamlit_RAG/에쓰오일.pdf']
 
     # 만약에 process라는 버튼을 누르면~ 구동되는 부분
-    openai_api_key = "sk-None-NNtoIFQFCeey0Fpz3O1vT3BlbkFJfoMmus4C2ogQ5F8elfhK"
+    openai_api_key = "open_api_key"
     if not openai_api_key: # openAI의 API가 환경 변수에 설정되어 있지 않으면, 아래 문구를 출력하도록 함
         st.info("Please set your API key in the environment variable 'API_KEY'.")
         st.stop()
